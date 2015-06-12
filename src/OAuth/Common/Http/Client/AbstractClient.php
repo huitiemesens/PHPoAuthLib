@@ -23,6 +23,16 @@ abstract class AbstractClient implements ClientInterface
     protected $timeout = 15;
 
     /**
+     * @var string The user agent string passed for option proxy
+     */    
+    protected $proxy = null;
+    
+    public function setProxy( $proxy )
+    {
+        $this->proxy = $proxy;
+    }    
+
+    /**
      * Creates instance
      *
      * @param string $userAgent The UA string the client will use

@@ -65,8 +65,7 @@ class CurlClient extends AbstractClient
         UriInterface $endpoint,
         $requestBody,
         array $extraHeaders = array(),
-        $method = 'POST',
-        $proxy = null
+        $method = 'POST'
     ) {
         // Normalize method name
         $method = strtoupper($method);
@@ -114,9 +113,6 @@ class CurlClient extends AbstractClient
         curl_setopt($ch, CURLOPT_HEADER, false);
         curl_setopt($ch, CURLOPT_HTTPHEADER, $extraHeaders);
         curl_setopt($ch, CURLOPT_USERAGENT, $this->userAgent);
-        
-        if( !empty( $proxy ) )
-            curl_setopt($ch, CURLOPT_PROXY, $proxy );
 
         foreach ($this->parameters as $key => $value) {
             curl_setopt($ch, $key, $value);
@@ -125,6 +121,9 @@ class CurlClient extends AbstractClient
         if ($this->forceSSL3) {
             curl_setopt($ch, CURLOPT_SSLVERSION, 3);
         }
+        
+        if( $this->proxy )
+            curl_setopt($ch, CURLOPT_PROXY, $this->proxy);
 
         $response     = curl_exec($ch);
         $responseCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);

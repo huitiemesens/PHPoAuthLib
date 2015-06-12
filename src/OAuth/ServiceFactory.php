@@ -105,11 +105,13 @@ class ServiceFactory
         CredentialsInterface $credentials,
         TokenStorageInterface $storage,
         $scopes = array(),
-        UriInterface $baseApiUri = null
+        UriInterface $baseApiUri = null,
+        $proxy = null
     ) {
         if (!$this->httpClient) {
             // for backwards compatibility.
             $this->httpClient = new StreamClient();
+            $this->httpClient->setProxy( $proxy );
         }
 
         foreach ($this->serviceBuilders as $version => $buildMethod) {
@@ -220,7 +222,8 @@ class ServiceFactory
     ) {
         if (!empty($scopes)) {
             throw new Exception(
-                'Scopes passed to ServiceFactory::createService but an OAuth1 service was requested.'
+                'Scopes passed to ServiceFactory::
+                but an OAuth1 service was requested.'
             );
         }
 
