@@ -130,10 +130,10 @@ abstract class AbstractService extends BaseAbstractService implements ServiceInt
         
         $headers = array_merge($authorizationHeader, $extraHeaders);
         
-        
         // if querystring array is not empty then we use an API wich require oauth parameters directly in URI
         if ( !empty ( $querystring ) ){
-            $uri = $this->determineRequestUriFromPath($path . "?" . $querystring['action'], $this->baseApiUri);
+            print_r ( $querystring );
+            $uri = $this->determineRequestUriFromPath($path . "?action=" . $querystring['action'], $this->baseApiUri);
         
             // Init value to build signature according to withings spec
             $dateTime = new \DateTime();
@@ -141,38 +141,154 @@ abstract class AbstractService extends BaseAbstractService implements ServiceInt
             $time = time();
             $nonce = $this->generateNonce();
 
-            // Params for signature uri generation
-            $params = "&oauth_consumer_key=" . $this->credentials->getConsumerId();
-            $params .= "&oauth_nonce=" . $nonce;
-            $params .= "&oauth_signature_method=HMAC-SHA1";
-            $params .= "&oauth_timestamp=" . $time;
-            $params .= "&oauth_token=" . $token->getAccessToken();
-            $params .= "&oauth_version=1.0";
-            
             //withings specifics
-            if ( $querystring['api'] == "withings" )
-                $params .= "&userid=" . $querystring['userid'];
+            if ( $querystring['api'] == "withings" ){
+                $params = '';
+                if ( $querystring['action'] === "subscribe" ){
+                    $params .= "&userid=" . $querystring['userid'];
+                    if ( !empty ( $querystring['callbackurl'] ) )
+                        $params .= "&callbackurl=" . urlencode($querystring['callbackurl']);
+                    if ( !empty ( $querystring['comment'] ) )
+                        $params .= "&comment=" . rawurlencode($querystring['comment']);
+                    if ( !empty ( $querystring['appli'] ) )
+                        $params .= "&appli=" . $querystring['appli'];
+                    $params .= "&oauth_consumer_key=" . $this->credentials->getConsumerId();
+                    $params .= "&oauth_nonce=" . $nonce;
+                    $params .= "&oauth_signature_method=HMAC-SHA1";
+                    $params .= "&oauth_timestamp=" . $time;
+                    $params .= "&oauth_token=" . $token->getAccessToken();
+                    $params .= "&oauth_version=1.0";
+                }
+                elseif ( $querystring['action'] === "getactivity" ){
+                    /*if ( !empty ( $querystring['date'] ) )
+                        $params .= "&date=" . $querystring['date'];
+                    if ( !empty ( $querystring['startdateymd'] ) )
+                        $params .= "&startdateymd=" . $querystring['startdateymd'];
+                    if ( !empty ( $querystring['enddateymd'] ) )
+                        $params .= "&enddateymd=" . $querystring['enddateymd'];*/
+                    $params .= "&enddateymd=" . date( "Y-m-d" ) ;
+                    $params .= "&oauth_consumer_key=" . $this->credentials->getConsumerId();
+                    $params .= "&oauth_nonce=" . $nonce;
+                    $params .= "&oauth_signature_method=HMAC-SHA1";
+                    $params .= "&oauth_timestamp=" . $time;
+                    $params .= "&oauth_token=" . $token->getAccessToken();
+                    $params .= "&oauth_version=1.0";
+                    $params .= "&startdateymd=2015-01-01" ;
+                    $params .= "&userid=" . $querystring['userid'];
+
+                }
+                elseif ( $querystring['action'] === "list" ){
+                    if ( !empty ( $querystring['appli'] ) )
+                        $params .= "&appli=" . $querystring['appli'];
+                    $params .= "&oauth_consumer_key=" . $this->credentials->getConsumerId();
+                    $params .= "&oauth_nonce=" . $nonce;
+                    $params .= "&oauth_signature_method=HMAC-SHA1";
+                    $params .= "&oauth_timestamp=" . $time;
+                    $params .= "&oauth_token=" . $token->getAccessToken();
+                    $params .= "&oauth_version=1.0";
+                    $params .= "&userid=" . $querystring['userid'];
+
+                }
+                else{
+                    $params .= "&oauth_consumer_key=" . $this->credentials->getConsumerId();
+                    $params .= "&oauth_nonce=" . $nonce;
+                    $params .= "&oauth_signature_method=HMAC-SHA1";
+                    $params .= "&oauth_timestamp=" . $time;
+                    $params .= "&oauth_token=" . $token->getAccessToken();
+                    $params .= "&oauth_version=1.0";
+                    $params .= "&userid=" . $querystring['userid'];
+                }
+            }else{
+                // Params for signature uri generation
+                $params = "&oauth_consumer_key=" . $this->credentials->getConsumerId();
+                $params .= "&oauth_nonce=" . $nonce;
+                $params .= "&oauth_signature_method=HMAC-SHA1";
+                $params .= "&oauth_timestamp=" . $time;
+                $params .= "&oauth_token=" . $token->getAccessToken();
+                $params .= "&oauth_version=1.0";                
+            }
 
             // urlencode of the full query for signature
-            $sigUri = "GET&" . rawurlencode( $sigUri ) . "&" . rawurlencode( $querystring['action'] . $params );
+            $sigUri = "GET&" . rawurlencode( $sigUri ) . "&" . rawurlencode( 'action=' . $querystring['action'] . $params );
+            file_put_contents('log.txt', PHP_EOL . "Sig Uri : " .  $sigUri, FILE_APPEND);
 
             // secrets keys for encoding ( app secret + user token secret )
-            $keys = array ( $this->credentials->getConsumerSecret() ,  $token->getAccessTokenSecret() );
-            $key    = implode ( '&', $keys );
-            $signature = rawurlencode (  base64_encode ( $this->hmacsha1( $key, $sigUri ) ) );
+            $keys       = array ( $this->credentials->getConsumerSecret() ,  $token->getAccessTokenSecret() );
+            $key        = implode ( '&', $keys );
+            $signature  = rawurlencode (  base64_encode ( $this->hmacsha1( $key, $sigUri ) ) );
 
-            $uri->query .= "&oauth_consumer_key=" . $this->credentials->getConsumerId();
-            $uri->query .= "&oauth_nonce=" . $nonce;
-            $uri->query .= "&oauth_signature=" . $signature;
-            $uri->query .= "&oauth_signature_method=HMAC-SHA1";
-            $uri->query .= "&oauth_timestamp=" . $time;
-            $uri->query .= "&oauth_token=" . $token->getAccessToken();
-            $uri->query .= "&oauth_version=1.0";
-            
             //withings specifics
-            if ( $querystring['api'] == "withings" )
-                $uri->query .= "&userid=" . $querystring['userid'];
+            if ( $querystring['api'] == "withings" ){
+                if ( $querystring['action'] === "subscribe" ){
+                    $uri->query .= "&userid=" . $querystring['userid'];
+                    if ( !empty ( $querystring['callbackurl'] ) )
+                        $uri->query .= "&callbackurl=" . urlencode($querystring['callbackurl']);
+                    if ( !empty ( $querystring['comment'] ) )
+                        $uri->query .= "&comment=" . rawurlencode($querystring['comment']);
+                    if ( !empty ( $querystring['appli'] ) )
+                        $uri->query .= "&appli=" . $querystring['appli'];
+
+                    $uri->query .= "&oauth_consumer_key=" . $this->credentials->getConsumerId();
+                    $uri->query .= "&oauth_nonce=" . $nonce;
+                    $uri->query .= "&oauth_signature=" . $signature;
+                    $uri->query .= "&oauth_signature_method=HMAC-SHA1";
+                    $uri->query .= "&oauth_timestamp=" . $time;
+                    $uri->query .= "&oauth_token=" . $token->getAccessToken();
+                    $uri->query .= "&oauth_version=1.0";
+                }
+                elseif ( $querystring['action'] === "list" ){
+                    if ( !empty ( $querystring['appli'] ) )
+                        $uri->query .= "&appli=" . $querystring['appli'];
+                    $uri->query .= "&oauth_consumer_key=" . $this->credentials->getConsumerId();
+                    $uri->query .= "&oauth_nonce=" . $nonce;
+                    $uri->query .= "&oauth_signature=" . $signature;
+                    $uri->query .= "&oauth_signature_method=HMAC-SHA1";
+                    $uri->query .= "&oauth_timestamp=" . $time;
+                    $uri->query .= "&oauth_token=" . $token->getAccessToken();
+                    $uri->query .= "&oauth_version=1.0";
+                    $uri->query .= "&userid=" . $querystring['userid'];
+
+                }
+                elseif ( $querystring['action'] === "getactivity" ){
+                    /*if ( !empty ( $querystring['date'] ) )
+                        $uri->query .= "&date=" . $querystring['date'];
+                    if ( !empty ( $querystring['startdateymd'] ) )
+                        $uri->query .= "&startdateymd=" . $querystring['startdateymd'];
+                    if ( !empty ( $querystring['enddateymd'] ) )
+                        $uri->query .= "&enddateymd=" . $querystring['enddateymd'];*/
+                    $uri->query .= "&enddateymd=" . date( "Y-m-d" ) ;
+                    $uri->query .= "&oauth_consumer_key=" . $this->credentials->getConsumerId();
+                    $uri->query .= "&oauth_nonce=" . $nonce;
+                    $uri->query .= "&oauth_signature=" . $signature;
+                    $uri->query .= "&oauth_signature_method=HMAC-SHA1";
+                    $uri->query .= "&oauth_timestamp=" . $time;
+                    $uri->query .= "&oauth_token=" . $token->getAccessToken();
+                    $uri->query .= "&oauth_version=1.0";
+                    $uri->query .= "&startdateymd=2015-01-01" ;
+                    $uri->query .= "&userid=" . $querystring['userid'];
+                }else{
+                    $uri->query .= "&oauth_consumer_key=" . $this->credentials->getConsumerId();
+                    $uri->query .= "&oauth_nonce=" . $nonce;
+                    $uri->query .= "&oauth_signature=" . $signature;
+                    $uri->query .= "&oauth_signature_method=HMAC-SHA1";
+                    $uri->query .= "&oauth_timestamp=" . $time;
+                    $uri->query .= "&oauth_token=" . $token->getAccessToken();
+                    $uri->query .= "&oauth_version=1.0";
+                    $uri->query .= "&userid=" . $querystring['userid'];
+                }
+            }else{
+                // uri->query for signature uri generation
+                $uri->query .= "&oauth_consumer_key=" . $this->credentials->getConsumerId();
+                $uri->query .= "&oauth_nonce=" . $nonce;
+                $uri->query .= "&oauth_signature=" . $signature;
+                $uri->query .= "&oauth_signature_method=HMAC-SHA1";
+                $uri->query .= "&oauth_timestamp=" . $time;
+                $uri->query .= "&oauth_token=" . $token->getAccessToken();
+                $uri->query .= "&oauth_version=1.0";
+            }
         }
+        file_put_contents('log.txt', PHP_EOL . "query string : " .  json_encode( $querystring ), FILE_APPEND);
+        file_put_contents('log.txt', PHP_EOL . "Query : " . json_encode( $uri->query ), FILE_APPEND);
         
         return $this->httpClient->retrieveResponse($uri, $body, $headers, $method);
     }

@@ -57,7 +57,6 @@ class StreamClient extends AbstractClient
             $requestBody = http_build_query($requestBody, '', '&');
         }
         $extraHeaders['Content-length'] = 'Content-length: '.strlen($requestBody);
-
         $context = $this->generateStreamContext($requestBody, $extraHeaders, $method);
 
         $level = error_reporting(0);

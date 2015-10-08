@@ -40,6 +40,7 @@ class Session implements TokenStorageInterface
             session_start();
         }
 
+
         $this->startSession = $startSession;
         $this->sessionVariableName = $sessionVariableName;
         $this->stateVariableName = $stateVariableName;
