@@ -18,6 +18,7 @@ use OAuth\Common\Service\ServiceInterface;
 use OAuth\Common\Consumer\CredentialsInterface;
 use OAuth\Common\Storage\TokenStorageInterface;
 use OAuth\Common\Http\Client\ClientInterface;
+use OAuth\Common\Http\Client\CurlClient;
 use OAuth\Common\Http\Client\StreamClient;
 use OAuth\Common\Http\Uri\UriInterface;
 use OAuth\Common\Exception\Exception;
@@ -110,7 +111,7 @@ class ServiceFactory
     ) {
         if (!$this->httpClient) {
             // for backwards compatibility.
-            $this->httpClient = new StreamClient();
+            $this->httpClient = new CurlClient();
             $this->httpClient->setProxy( $proxy );
         }
 
