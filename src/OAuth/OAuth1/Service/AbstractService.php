@@ -164,8 +164,8 @@ abstract class AbstractService extends BaseAbstractService implements ServiceInt
                         $params .= "&date=" . $querystring['date'];
                     if ( !empty ( $querystring['startdateymd'] ) )
                         $params .= "&startdateymd=" . $querystring['startdateymd'];*/
-                    if ( !empty ( $querystring['enddateymd'] ) )
-                        $params .= "&enddateymd=" . $querystring['enddateymd'];
+                    //if ( !empty ( $querystring['enddateymd'] ) )
+                        $params .= "&enddateymd=" . date( "Y-m-d" ) ;
                     $params .= "&enddateymd=" . $querystring['enddateymd'] ;
                     $params .= "&oauth_consumer_key=" . $this->credentials->getConsumerId();
                     $params .= "&oauth_nonce=" . $nonce;
@@ -173,8 +173,9 @@ abstract class AbstractService extends BaseAbstractService implements ServiceInt
                     $params .= "&oauth_timestamp=" . $time;
                     $params .= "&oauth_token=" . $token->getAccessToken();
                     $params .= "&oauth_version=1.0";
-                    if ( !empty ( $querystring['startdateymd'] ) )
-                    $params .= "&startdateymd=" . $querystring['startdateymd'] ;
+                    //if ( !empty ( $querystring['startdateymd'] ) )
+                    //$params .= "&startdateymd=" . $querystring['startdateymd'] ;
+                    $params .= "&startdateymd=2015-01-01" ;
                     $params .= "&userid=" . $querystring['userid'];
 
                 }
@@ -253,8 +254,8 @@ abstract class AbstractService extends BaseAbstractService implements ServiceInt
                 elseif ( $querystring['action'] === "getactivity" ){
                     /*if ( !empty ( $querystring['date'] ) )
                         $uri->query .= "&date=" . $querystring['date'];*/
-                    if ( !empty ( $querystring['enddateymd'] ) )
-                        $uri->query .= "&enddateymd=" . $querystring['enddateymd'] ;
+                    //if ( !empty ( $querystring['enddateymd'] ) )
+                        $uri->query .= "&enddateymd=" . date( "Y-m-d" ) ;
                     $uri->query .= "&oauth_consumer_key=" . $this->credentials->getConsumerId();
                     $uri->query .= "&oauth_nonce=" . $nonce;
                     $uri->query .= "&oauth_signature=" . $signature;
@@ -263,8 +264,8 @@ abstract class AbstractService extends BaseAbstractService implements ServiceInt
                     $uri->query .= "&oauth_token=" . $token->getAccessToken();
                     $uri->query .= "&oauth_version=1.0";
 
-                    if ( !empty ( $querystring['startdateymd'] ) )
-                        $uri->query .= "&startdateymd=" . $querystring['startdateymd'] ;
+                    //if ( !empty ( $querystring['startdateymd'] ) )
+                    $uri->query .= "&startdateymd=2015-01-01" ;
                     $uri->query .= "&userid=" . $querystring['userid'];
                 }else{
                     $uri->query .= "&oauth_consumer_key=" . $this->credentials->getConsumerId();
