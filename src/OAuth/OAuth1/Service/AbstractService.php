@@ -158,6 +158,7 @@ abstract class AbstractService extends BaseAbstractService implements ServiceInt
                     $params .= "&oauth_timestamp=" . $time;
                     $params .= "&oauth_token=" . $token->getAccessToken();
                     $params .= "&oauth_version=1.0";
+//die( 'debug  ' . $params );
                 }
                 elseif ( $querystring['action'] === "getactivity" ){
                     if ( !empty ( $querystring['enddateymd'] ) )
