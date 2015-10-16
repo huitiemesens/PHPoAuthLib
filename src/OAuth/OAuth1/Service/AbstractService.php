@@ -160,6 +160,20 @@ abstract class AbstractService extends BaseAbstractService implements ServiceInt
                     $params .= "&oauth_version=1.0";
 //die( 'debug  ' . $params );
                 }
+
+                elseif ( $querystring['action'] === 'getmeas' ){
+                    if ( !empty ( $querystring['enddate'] ) )
+                        $params .= "&enddate=" . $querystring['enddate'];
+                    $params .= "&oauth_consumer_key=" . $this->credentials->getConsumerId();
+                    $params .= "&oauth_nonce=" . $nonce;
+                    $params .= "&oauth_signature_method=HMAC-SHA1";
+                    $params .= "&oauth_timestamp=" . $time;
+                    $params .= "&oauth_token=" . $token->getAccessToken();
+                    $params .= "&oauth_version=1.0";
+                    if ( !empty ( $querystring['startdate'] ) )
+                      $params .= "&startdate=" . $querystring['startdate'] ;
+                    $params .= "&userid=" . $querystring['userid'];                    
+                }
                 elseif ( $querystring['action'] === "getactivity" ){
                     if ( !empty ( $querystring['enddateymd'] ) )
                         $params .= "&enddateymd=" . $querystring['enddateymd'];
@@ -247,6 +261,20 @@ abstract class AbstractService extends BaseAbstractService implements ServiceInt
                     $uri->query .= "&oauth_version=1.0";
                     $uri->query .= "&userid=" . $querystring['userid'];
 
+                }
+                elseif ( $querystring['action'] === 'getmeas' ){
+                    if ( !empty ( $querystring['enddate'] ) )
+                        $uri->query .= "&enddate=" . $querystring['enddate'];
+                    $uri->query .= "&oauth_consumer_key=" . $this->credentials->getConsumerId();
+                    $uri->query .= "&oauth_nonce=" . $nonce;
+                    $uri->query .= "&oauth_signature=" . $signature;
+                    $uri->query .= "&oauth_signature_method=HMAC-SHA1";
+                    $uri->query .= "&oauth_timestamp=" . $time;
+                    $uri->query .= "&oauth_token=" . $token->getAccessToken();
+                    $uri->query .= "&oauth_version=1.0";
+                    if ( !empty ( $querystring['startdate'] ) )
+                      $uri->query .= "&startdate=" . $querystring['startdate'] ;
+                    $uri->query .= "&userid=" . $querystring['userid'];                    
                 }
                 elseif ( $querystring['action'] === "getactivity" ){
                     if ( !empty ( $querystring['enddateymd'] ) )
